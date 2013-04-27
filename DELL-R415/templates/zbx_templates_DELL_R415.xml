@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>2.0</version>
-    <date>2013-04-27T07:53:16Z</date>
+    <date>2013-04-27T08:21:48Z</date>
     <groups>
         <group>
             <name>Templates</name>
@@ -430,11 +430,11 @@
     </templates>
     <triggers>
         <trigger>
-            <expression>{Template Dell PowerEdge R415:ipmi.sensor.Ambient_Temp.avg(#3)}&gt;40</expression>
-            <name>temp too hot</name>
+            <expression>{Template Dell PowerEdge R415:ipmi.sensor.Ambient_Temp.last(0)}&gt;40</expression>
+            <name>服务器温度近超过40度</name>
             <url/>
             <status>0</status>
-            <priority>4</priority>
+            <priority>3</priority>
             <description/>
             <type>0</type>
             <dependencies/>
