@@ -7,7 +7,7 @@
 # chkconfig: - 95 5
 # description: Zabbix Monitoring JavaGateway
 
-# Auth: pengyao
+# Author: pengyao <https://github.com/pengyao>
 # Date: 2013-05-01
 
 BASE="/usr/local/zabbix_java_gateway"
