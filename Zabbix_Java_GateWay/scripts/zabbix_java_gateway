@@ -1,0 +1,150 @@
+#!/bin/bash
+#
+#       /etc/init.d/zabbix_java_gateway
+#
+# Starts the zabbix_Java_gatway daemon
+#
+# chkconfig: - 95 5
+# description: Zabbix Monitoring JavaGateway
+
+# Auth: pengyao
+# Date: 2013-05-01
+
+BASE="/usr/local/zabbix_java_gateway"
+CONF="/etc/zabbix/zabbix_java_gateway.conf"
+ZABBIX_JAVA_DIR="${BASE}/sbin/zabbix_java"
+
+JAVA=${JAVA_HOME}/bin/java
+
+RETVAL=0
+PROG="Zabbix Java Gateway"
+
+###Functions
+get_options(){
+    config=$1
+    option=$2 
+    default_value=$3
+    result=$(sed -n "s/^${option}=//p" ${config}|tail -n 1|sed -r "s/[\"\']//g")
+    if [ -z "$result" ];then
+        result="${default_value}"
+    fi
+}
+
+get_options ${CONF} LISTEN_IP "0.0.0.0"
+LISTEN_IP="${result}"
+get_options ${CONF} LISTEN_PORT "10052"
+LISTEN_PORT="${result}"
+get_options ${CONF} PID_FILE "/tmp/zabbix_java.pid"
+PID_FILE="${result}"
+get_options ${CONF} START_POLLERS "5"
+START_POLLERS="${result}"
+
+
+BOOTUP="color"
+RES_COL=60
+MOVE_TO_COL="echo -en \\033[${RES_COL}G"
+SETCOLOR_SUCCESS="echo -en \\033[1;32m"
+SETCOLOR_FAILURE="echo -en \\033[1;31m"
+SETCOLOR_NORMAL="echo -en \\033[0;39m"
+
+echo_success() {
+    echo -en "\t\t\t\t\t"
+    [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
+    echo -n "["
+    [ "$BOOTUP" = "color" ] && $SETCOLOR_SUCCESS
+    echo -n $"  OK  "
+    [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
+    echo -n "]"
+    echo -e "\r"
+    return 0
+}
+
+echo_failure() {
+	echo -en "\t\t\t\t\t"
+	[ "$BOOTUP" = "color" ] && $MOVE_TO_COL
+	echo -n "["
+	[ "$BOOTUP" = "color" ] && $SETCOLOR_FAILURE
+	echo -n $"FAILED"
+	[ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
+	echo -n "]"
+	echo -e "\r"
+	return 1
+}
+
+status(){
+	if [ -n "$PID_FILE" -a -e "$PID_FILE" ] && [ -d "/proc/`cat ${PID_FILE}`" ]; then
+	   echo -e "${PROG} is already running"
+	   RETVAL=0
+	else
+	   echo -e "${PROG} is not running"
+	   RETVAL=1
+	fi
+	
+	return $RETVAL
+}
+
+start(){
+	JAVA_OPTIONS="-server -Dlogback.configurationFile=logback-console.xml"
+	ZABBIX_OPTIONS="-Dzabbix.listenIP=$LISTEN_IP -Dzabbix.listenPort=$LISTEN_PORT -Dzabbix.pidFile=$PID_FILE -Dzabbix.startPollers=$START_POLLERS"
+	
+	CLASSPATH="${ZABBIX_JAVA_DIR}/lib"
+	for jar in ${ZABBIX_JAVA_DIR}/{lib,bin}/*.jar; do
+	        if [[ $jar != *junit* ]]; then
+	                CLASSPATH="$CLASSPATH:$jar"
+	        fi
+	done
+	
+	COMMAND_LINE="$JAVA $JAVA_OPTIONS -classpath $CLASSPATH $ZABBIX_OPTIONS com.zabbix.gateway.JavaGateway"
+	
+	echo -n "Starting: ${PROG}"
+	$COMMAND_LINE > /dev/null 2>&1 &
+	RETVAL=$?    
+	
+	echo $! > $PID_FILE
+	
+	if [ $RETVAL -eq 0 ];then
+	    echo_success
+	else
+	    echo_failure
+	fi
+	return $RETVAL
+
+}
+
+
+stop(){
+	echo -n "Stopping: ${PROG}"
+	kill `cat $PID_FILE`
+
+	RETVAL=$?
+	if [ $RETVAL -eq 0 ];then
+	   echo_success
+	else
+	   echo_failure
+	   exit $RETVAL
+    fi
+	return $RETVAL
+}
+
+case "$1" in
+    start)
+       status >/dev/null 2>&1
+       [ $? = 0 ] || start
+       ;;
+    stop)
+       status >/dev/null 2>&1
+       [ $? = 0 ] && stop
+       ;;
+    restart)
+       status >/dev/null 2>&1
+       [ $? = 0 ] && stop && sleep 5
+       start
+       ;;
+    status)
+       status
+       ;;
+    *)
+       echo -e "Usage: $0 {start|stop|restart|status}"
+       exit 2
+esac
+exit $?
