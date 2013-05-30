@@ -37,4 +37,5 @@
 #### Zabbix Server
 * 导入 [templates/zbx_templates_phpfpm_status.xml](templates/zbx_templates_phpfpm_status.xml) 模板,并关联对应主机
 * 效果图:
+ 
 ![php-fpm效果图](snapshot.jpg)
