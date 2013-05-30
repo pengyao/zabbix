@@ -15,7 +15,10 @@
 #### Zabbix Server
 * 导入[templates/redis.xml](templates/redis.xml)模板，并关联对应主机
 
+#### 效果图
+* CPU效果图
 
+![redis-cpu](redis-cpu-snapshot.jpg)
 
 
 
