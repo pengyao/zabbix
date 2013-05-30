@@ -20,13 +20,23 @@
 
 ![redis-cpu](redis-cpu-snapshot.jpg)
 
+* 连接效果图
+
+![redis-connection](redis-connection-snapshot.jpg)
+
+* 已存储的items效果图
+
+![redis-items-stored](redis-items-stored-snapshot.jpg)
 
 
+* 内存使用效果图 
+
+![redis-memory](redis-memory-snapshot.jpg)
 
 
+* 请求状态效果图 
 
-
-
+![redis-request](redis-request-snapshot.jpg)
 
 
 
